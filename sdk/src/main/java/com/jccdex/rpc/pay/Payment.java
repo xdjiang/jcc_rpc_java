@@ -1,2 +1,4 @@
-package com.jccdex.rpc.pay;public class Payment {
+package com.jccdex.rpc.pay;
+
+public class Payment {
 }

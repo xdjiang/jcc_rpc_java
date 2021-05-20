@@ -1,43 +1,43 @@
 package com.jccdex.rpc.token;
 
 /**
- * 链通证数据对象
+ * 链通证基本数据对象
  * @author xdjiang
  */
-public class Token {
+public class BaseToken {
     /**
      * 通证名称
      */
-    private String name;
+    private final String name;
 
     /**
      * 发行银关
      */
-    private String issuer;
+    private final String issuer;
 
     /**
      * 是否是链的记账通证
      */
-    private boolean isNative;
+    private final boolean isNative;
 
     /**
      * 构造函数
      * @param name 通证名称
      * @param issuer 发行银关
      */
-    public Token(String name, String issuer) {
+    public BaseToken(String name, String issuer) {
         this.name = name.toUpperCase();
         this.issuer = issuer;
-        this.isNative = false;
+        this.isNative = this.issuer.length() <= 0;
     }
 
     /**
      * 构造函数
      * @param name 通证名称
      */
-    public Token(String name) {
+    public BaseToken(String name) {
         this.name = name;
-        this.issuer = null;
+        this.issuer = "";
         this.isNative = true;
     }
 

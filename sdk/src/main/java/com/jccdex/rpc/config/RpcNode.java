@@ -1,17 +1,15 @@
 package com.jccdex.rpc.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.ArrayList;
 
-public class ExplorerNode extends AServerNode {
+public class RpcNode extends AServerNode {
 
     /**
      *
-     * @param expNodes 浏览器服务地址
+     * @param rpcNodes RPC服务器地址
      */
-    public ExplorerNode(ArrayList<String> expNodes)
+    public RpcNode(ArrayList<String> rpcNodes)
     {
-         super(expNodes);
+        super(rpcNodes);
     }
 }
