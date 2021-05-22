@@ -14,6 +14,7 @@ import com.jccdex.rpc.core.coretypes.Currency;
 import com.jccdex.rpc.core.coretypes.hash.Hash256;
 import com.jccdex.rpc.core.coretypes.uint.UInt32;
 import com.jccdex.rpc.core.types.known.tx.signed.SignedTransaction;
+import com.jccdex.rpc.core.types.known.tx.txns.OfferCancel;
 import com.jccdex.rpc.core.types.known.tx.txns.OfferCreate;
 import com.jccdex.rpc.core.types.known.tx.txns.Payment;
 import com.jccdex.rpc.http.OkhttpUtil;
@@ -380,6 +381,8 @@ public class JccRpc {
             SignedTransaction _tx = payment.sign(_secret);
             String blob = _tx.tx_blob;
             String hash = _tx.hash.toHex();
+            String result = "";
+            int times = this.tryTimes;;
 
             ObjectNode data = mapper.createObjectNode();
             ObjectNode object = mapper.createObjectNode();
@@ -391,14 +394,26 @@ public class JccRpc {
             data.put("method", "submit");
             data.set("params", array);
 
+            do {
+                times--;
                 String url = rpcNode.getUrls();
-                String result = OkhttpUtil.post(url, data.toString());
+                result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
                 if("tesSUCCESS".equals(status)) {
-                    return hash;
+                    break;
                 } else {
-                    throw new Exception("转账失败");
+                    result = "";
+                    //延时500毫秒
+                    Thread.sleep(1000);
+                    continue;
                 }
+            }while(times > 0);
+
+            if(result.isEmpty()) {
+                throw new Exception("转账失败");
+            } else {
+                return result;
+            }
         } catch (Exception e) {
             throw e;
         }
@@ -550,7 +565,6 @@ public class JccRpc {
             Wallet wallet = Wallet.fromSecret(_secret);
             String address = wallet.getAddress();
 
-            ObjectMapper mapper = new ObjectMapper();
             String payToken = _payToke.toUpperCase();
             String getToken = _getToken.toUpperCase();
 
@@ -599,9 +613,10 @@ public class JccRpc {
             SignedTransaction _tx = offerCreate.sign(_secret);
             String blob = _tx.tx_blob;
             String hash = _tx.hash.toHex();
-            int times = 1;
+            int times = this.tryTimes;;
             String result = "";
 
+            ObjectMapper mapper = new ObjectMapper();
             ObjectNode data = mapper.createObjectNode();
             ObjectNode object = mapper.createObjectNode();
             object.put("tx_blob", blob);
@@ -617,17 +632,93 @@ public class JccRpc {
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(!"tesSUCCESS".equals(status)) {
+                if("tesSUCCESS".equals(status)) {
+                    break;
+                } else {
                     result = "";
+                    //延时500毫秒
+                    Thread.sleep(1000);
+                    continue;
                 }
-//                System.out.println(result);
-                //延时500毫秒
-                Thread.sleep(1000);
-                continue;
             }while(times > 0);
 
             if(result.isEmpty()) {
                 throw new Exception("挂单失败");
+            } else {
+                return result;
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+
+    }
+
+    /**
+     * 取消挂单
+     * @param _secret 钱包密钥
+     * @param _sequence 挂单序列号
+     * @return
+     */
+    public String cancleOrder(String _secret, String _sequence) throws Exception{
+        try {
+            if(!Wallet.isValidSecret(_secret)) {
+                throw new Exception("钱包密钥不合法");
+            }
+
+            BigDecimal bigDecimal = new BigDecimal(_sequence);
+
+            if(bigDecimal.compareTo(new BigDecimal(0)) < 1){
+                throw new Exception("sequence不能小于等于0");
+            }
+
+
+            Wallet wallet = Wallet.fromSecret(_secret);
+            String address = wallet.getAddress();
+
+            OfferCancel offerCancel = new OfferCancel();
+            offerCancel.as(AccountID.Account, address);
+            offerCancel.as(UInt32.OfferSequence, bigDecimal.longValue());
+            offerCancel.as(Amount.Fee, String.valueOf(Config.FEE));
+            String sequence = this.sequence(address);
+            offerCancel.sequence(new UInt32(sequence));
+
+            SignedTransaction _tx = offerCancel.sign(_secret);
+            String blob = _tx.tx_blob;
+            String hash = _tx.hash.toHex();
+            int times = this.tryTimes;
+            String tx = "";
+            String result = "";
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode data = mapper.createObjectNode();
+            ObjectNode object = mapper.createObjectNode();
+            object.put("tx_blob", blob);
+            ArrayList<ObjectNode> params = new ArrayList<>();
+            params.add(object);
+            ArrayNode array = mapper.valueToTree(params);
+
+            data.put("method", "submit");
+            data.set("params", array);
+
+            do{
+                times--;
+                String url = rpcNode.getUrls();
+                result = OkhttpUtil.post(url, data.toString());
+                System.out.println(result);
+                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
+                if("tesSUCCESS".equals(status)) {
+                    break;
+                } else {
+                    result = "";
+                    //延时500毫秒
+                    Thread.sleep(1000);
+                    continue;
+                }
+
+            }while(times > 0);
+
+            if(result.isEmpty()) {
+                throw new Exception("撤单失败");
             } else {
                 return result;
             }
