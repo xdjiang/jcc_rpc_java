@@ -59,6 +59,8 @@ public class TxFormat extends Format {
         put(Field.PreviousTxnID,       Requirement.OPTIONAL);
         put(Field.AccountTxnID,        Requirement.OPTIONAL);
         put(Field.Memos,               Requirement.OPTIONAL);
+        put(Field.Platform,            Requirement.OPTIONAL);
+
     }
 
     @Override

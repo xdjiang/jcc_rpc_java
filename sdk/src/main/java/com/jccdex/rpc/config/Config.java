@@ -10,7 +10,8 @@ import com.jccdex.rpc.encoding.base58.B58;
 // Somewhat of a global registry, dependency injection ala guice would be nicer, but trying to KISS
 public class Config {
     public static final String DEFAULT_ALPHABET = "jpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65rkm8oFqi1tuvAxyz";
-    public static final String  DEFAULT_ISSUER= "jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or";
+    public static final String DEFAULT_ISSUER = "jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or";
+    public static final String DEFAULT_PLATFORM = "jDXCeSHSpZ9LiX6ihckWaYDeDt5hFrdTto";
     public static final double DEFAULT_FEE_CUSHION = 1.1;
     public static final String  DEFAULT_CURRENCY= "SWT";
     public static B58IdentiferCodecs b58IdentiferCodecs;
@@ -22,6 +23,7 @@ public class Config {
     public static String ACCOUNT_ONE = "jjjjjjjjjjjjjjjjjjjjBZbvri";
     public static Integer FEE = 100;
     public static String ISSUER;
+    public static String PLATFORM;
 
     public static void setAlphabet(String alphabet) {
         b58 = new B58(alphabet);
@@ -58,12 +60,12 @@ public class Config {
      * We set up all the defaults here
      */
     static {
-
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         setAlphabet(DEFAULT_ALPHABET);
         setIssuer(DEFAULT_ISSUER);
         setFeeCushion(DEFAULT_FEE_CUSHION);
         setCurrency(DEFAULT_CURRENCY);
+        setPlatform(DEFAULT_PLATFORM);
         initBouncy();
     }
 
@@ -85,6 +87,10 @@ public class Config {
 
     public static void setCurrency(String _currency) {
         CURRENCY = _currency;
+    }
+
+    public static void setPlatform(String _platform) {
+        PLATFORM = _platform;
     }
 
 }

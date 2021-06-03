@@ -14,6 +14,11 @@ public class ECDSASignature {
 	public BigInteger r, s;
 	
 	/** Constructs a signature with the given components. */
+	/**
+	 *
+	 * @param r
+	 * @param s
+	 */
 	public ECDSASignature(BigInteger r, BigInteger s) {
 		this.r = r;
 		this.s = s;

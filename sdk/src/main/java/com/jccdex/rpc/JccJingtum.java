@@ -1,7 +1,6 @@
 package com.jccdex.rpc;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,52 +10,154 @@ import com.jccdex.rpc.config.RpcNode;
 import com.jccdex.rpc.core.coretypes.AccountID;
 import com.jccdex.rpc.core.coretypes.Amount;
 import com.jccdex.rpc.core.coretypes.Currency;
-import com.jccdex.rpc.core.coretypes.hash.Hash256;
 import com.jccdex.rpc.core.coretypes.uint.UInt32;
 import com.jccdex.rpc.core.types.known.tx.signed.SignedTransaction;
 import com.jccdex.rpc.core.types.known.tx.txns.OfferCancel;
 import com.jccdex.rpc.core.types.known.tx.txns.OfferCreate;
 import com.jccdex.rpc.core.types.known.tx.txns.Payment;
 import com.jccdex.rpc.http.OkhttpUtil;
-import com.jccdex.rpc.utils.CheckUtils;
 import com.jccdex.rpc.utils.Utils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
-public class JccRpc {
+public class JccJingtum {
     private RpcNode rpcNode;
     //请求次数
-    private int tryTimes = 5;
+    private int tryTimes = 10;
+    private Wallet wallet;
 
-    public JccRpc(ArrayList<String> _rpcNodes) {
+    /**
+     * rpc节点服务器地址列表
+     * @param _rpcNodes
+     */
+    JccJingtum(ArrayList<String> _rpcNodes) {
         rpcNode = new RpcNode(_rpcNodes);
     }
 
-    public JccRpc(String _alphabet, ArrayList<String> _rpcNodes) {
-        Config.setAlphabet(_alphabet);
-        rpcNode = new RpcNode(_rpcNodes);
-
-    }
-
-    public JccRpc(Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
+    /**
+     * 井通公链RPC服务构造函数
+     * @param _fee 交易手续费
+     * @param _baseToken 交易燃料手续费通证,也是公链的本币
+     * @param _issuer 银关地址
+     * @param _rpcNodes rpc节点服务器地址列表
+     */
+    public JccJingtum(Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
+        this(_rpcNodes);
         Config.setFee(_fee);
         Config.setCurrency(_baseToken);
         Config.setIssuer(_issuer);
-        rpcNode = new RpcNode(_rpcNodes);
     }
 
 
-    public JccRpc(String _alphabet, Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
+    /**
+     * 联盟链RPC服务构造函数
+     * @param _alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+     * @param _fee 交易手续费
+     * @param _baseToken 交易燃料手续费通证,也是公链的本币
+     * @param _issuer 银关地址
+     * @param _rpcNodes rpc节点服务器地址列表
+     */
+    public JccJingtum(String _alphabet, Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
+        this(_fee,_baseToken,_issuer,_rpcNodes);
         Config.setAlphabet(_alphabet);
-        Config.setFee(_fee);
-        Config.setCurrency(_baseToken);
-        Config.setIssuer(_issuer);
-        rpcNode = new RpcNode(_rpcNodes);
     }
 
+    /**
+     * 联盟链RPC服务构造函数
+     * @param _alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+     * @param _fee 交易手续费
+     * @param _baseToken 交易燃料手续费通证,也是公链的本币
+     * @param _issuer 银关地址
+     * @param _platform 交易平台收费账号
+     * @param _rpcNodes rpc节点服务器地址列表
+     */
+    public JccJingtum(String _alphabet, Integer _fee, String _baseToken, String _issuer, String _platform, ArrayList<String> _rpcNodes) {
+        this(_alphabet,_fee,_baseToken,_issuer,_rpcNodes);
+        Config.setPlatform(_platform);
+    }
+
+    /**
+     * 设置每笔交易燃料费
+     * @param _fee
+     */
+    public void setFee(Integer _fee) throws  Exception{
+        try {
+            if(_fee <=0) {
+                throw new Exception("燃料费不能小于等于0");
+            }
+            Config.setFee(_fee);
+        } catch (Exception e) {
+            throw new Exception("设置燃料费异常");
+        }
+    }
+
+    /**
+     * 获取每笔交易燃料费
+     * @return
+     */
+    public Integer getFee() {
+        return Config.FEE;
+    }
+
+    /**
+     * 设置交易平台账号
+     * @param _platform
+     */
+    public void setPlatform(String _platform) throws  Exception{
+        try {
+            if(!Wallet.isValidAddress(_platform)) {
+                throw new Exception("平台账号不合法");
+            }
+            Config.setPlatform(_platform);
+        } catch (Exception e) {
+            throw new Exception("设置交易平台账号异常");
+        }
+    }
+
+    public String getPlatform() {
+        return Config.PLATFORM;
+    }
+
+    /**
+     * 创建钱包(账号)
+     * @return json字符串({"secret":****,"address":****})
+     * @throws Exception
+     */
+    public String createWallet()  throws Exception {
+        try {
+            ObjectNode data = new ObjectMapper().createObjectNode();
+            Wallet _w = Wallet.generate();
+            data.put("secret",_w.getSecret());
+            data.put("address",_w.getAddress());
+            return data.toString();
+        } catch (Exception e) {
+            throw new Exception("创建钱包异常");
+        }
+    }
+
+    /**
+     * 通过钱包密钥获取钱包地址
+     * @param _secret
+     * @return
+     * @throws Exception
+     */
+    public String getWalletAddress(String _secret) throws  Exception {
+        try {
+            if(!Wallet.isValidSecret(_secret)) {
+                throw new Exception("钱包密钥不合法");
+            }
+            Wallet _w = Wallet.fromSecret(_secret);
+            return _w.getAddress();
+        } catch (Exception e) {
+            throw new Exception("创建钱包异常");
+        }
+    }
+
+    /**
+     * 设置出错尝试次数
+     * @param _tryTimes 次数
+     */
     public void setTryTimes(int _tryTimes) {
         this.tryTimes = _tryTimes;
     }
@@ -217,7 +318,7 @@ public class JccRpc {
     }
 
     /**
-     *  安全转账，每笔交易都会校验是否成功，适合普通转账，优点：每笔校交易都进行确认，缺点：转账效率底下
+     *  安全转账，每笔交易都会校验是否成功，适合普通转账，优点：每笔交易都进行确认，缺点：转账效率低下
      * @param _secret 发送者钱包密钥
      * @param _receiver 接收者钱包地址
      * @param _token 转账Token
@@ -295,8 +396,9 @@ public class JccRpc {
             do{
                 times--;
                 String url = rpcNode.getUrls();
+                System.out.println(url);
                 String result = OkhttpUtil.post(url, data.toString());
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 try {
                     tx = this._requestTx(hash,url);
                     if(!tx.isEmpty()) {
@@ -420,7 +522,7 @@ public class JccRpc {
     }
 
     /**
-     * 安全挂单，每笔挂单都会校验是否成功，适合普通调用，优点：每笔校交易都进行确认，缺点：效率底下
+     * 安全挂单，每笔挂单都会校验是否成功，适合普通调用，优点：每笔交易都进行确认，缺点：效率低下
      * @param _secret 挂单方钱包密钥
      * @param _payToke  挂单方支付的Token名称
      * @param _payAmount 挂单方支付的Token数量
@@ -452,6 +554,7 @@ public class JccRpc {
 
             OfferCreate offerCreate = new OfferCreate();
             offerCreate.as(AccountID.Account, address);
+            offerCreate.as(AccountID.Platform, Config.PLATFORM);
 
             Amount payAmount;
             BigDecimal payBigDecimal = new BigDecimal(_payAmount);
@@ -514,7 +617,7 @@ public class JccRpc {
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
 
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 try {
                     tx = this._requestTx(hash,url);
                     if(!tx.isEmpty()) {
@@ -570,6 +673,7 @@ public class JccRpc {
 
             OfferCreate offerCreate = new OfferCreate();
             offerCreate.as(AccountID.Account, address);
+            offerCreate.as(AccountID.Platform, Config.PLATFORM);
 
             Amount payAmount;
             BigDecimal payBigDecimal = new BigDecimal(_payAmount);
@@ -727,4 +831,5 @@ public class JccRpc {
         }
 
     }
+
 }

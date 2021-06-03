@@ -174,6 +174,9 @@ public class Transaction extends STObject {
 	public void account(AccountID val) {
 		put(Field.Account, val);
 	}
+	public void platform(AccountID val) {
+		put(Field.Platform, val);
+	}
 	
 	// 新增方法
 	public void memos(STArray val) {
@@ -184,7 +187,7 @@ public class Transaction extends STObject {
 	/**
 	 * 添加备注信息
 	 * 
-	 * @param memo
+	 * @param memos
 	 */
 	public void addMemo(List<String> memos) {
 		JSONArray memosArray = new JSONArray();
