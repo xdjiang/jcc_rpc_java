@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class JccJingtum {
     private RpcNode rpcNode;
     //请求次数
-    private int tryTimes = 10;
+    private int tryTimes = 30;
     private Wallet wallet;
 
     /**
@@ -240,11 +240,11 @@ public class JccJingtum {
                 ArrayNode array = (ArrayNode) mapper.valueToTree(params);
                 data.put("method", "tx");
                 data.set("params", array);
-
                 String res = OkhttpUtil.post(rpcNode, data.toString());
                 String status = JSONObject.parseObject(res).getJSONObject("result").getString("status");
                 Boolean validated = JSONObject.parseObject(res).getJSONObject("result").getBoolean("validated");
-                if ("success".equals(status) && validated) {
+//                if ("success".equals(status) && validated) {
+                if ("success".equals(status)) {
                     tx = res;
                 }
 
@@ -396,7 +396,7 @@ public class JccJingtum {
             do{
                 times--;
                 String url = rpcNode.getUrls();
-                System.out.println(url);
+//                System.out.println(url);
                 String result = OkhttpUtil.post(url, data.toString());
                 Thread.sleep(1000);
                 try {
@@ -598,6 +598,7 @@ public class JccJingtum {
             SignedTransaction _tx = offerCreate.sign(_secret);
             String blob = _tx.tx_blob;
             String hash = _tx.hash.toHex();
+//            System.out.println(hash);
             int times = this.tryTimes;
             String tx = "";
             String result = "";
@@ -808,7 +809,7 @@ public class JccJingtum {
                 times--;
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
-                System.out.println(result);
+//                System.out.println(result);
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
                 if("tesSUCCESS".equals(status)) {
                     break;
