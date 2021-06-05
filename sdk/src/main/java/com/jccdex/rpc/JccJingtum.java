@@ -20,73 +20,83 @@ import com.jccdex.rpc.utils.Utils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
+//
+/**
+ * 井通公链、联盟链RPC开发接口
+ * @author xdjiang, shuonimei
+ */
 public class JccJingtum {
     private RpcNode rpcNode;
     //请求次数
+
+    /**
+     * 重复请求次数
+     */
     private int tryTimes = 30;
     private Wallet wallet;
+    private final String SUCCESS_CODE = "success";
+    private final String TX_SUCCESS_CODE = "tesSUCCESS";
 
     /**
      * rpc节点服务器地址列表
-     * @param _rpcNodes
+     * @param rpcNodes
      */
-    JccJingtum(ArrayList<String> _rpcNodes) {
-        rpcNode = new RpcNode(_rpcNodes);
+    JccJingtum(ArrayList<String> rpcNodes) {
+        rpcNode = new RpcNode(rpcNodes);
     }
 
     /**
-     * 井通公链RPC服务构造函数
-     * @param _fee 交易手续费
-     * @param _baseToken 交易燃料手续费通证,也是公链的本币
-     * @param _issuer 银关地址
-     * @param _rpcNodes rpc节点服务器地址列表
+     * 井通公链、联盟链RPC服务构造函数
+     * @param fee 每笔交易燃料费(燃料费计算公式=fee/1000000)
+     * @param baseToken 交易燃料手续费通证,也是公链的本币
+     * @param issuer 银关地址
+     * @param rpcNodes rpc节点服务器地址列表
      */
-    public JccJingtum(Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
-        this(_rpcNodes);
-        Config.setFee(_fee);
-        Config.setCurrency(_baseToken);
-        Config.setIssuer(_issuer);
+    public JccJingtum(Integer fee, String baseToken, String issuer, ArrayList<String> rpcNodes) {
+        this(rpcNodes);
+        Config.setFee(fee);
+        Config.setCurrency(baseToken);
+        Config.setIssuer(issuer);
     }
 
 
     /**
-     * 联盟链RPC服务构造函数
-     * @param _alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
-     * @param _fee 交易手续费
-     * @param _baseToken 交易燃料手续费通证,也是公链的本币
-     * @param _issuer 银关地址
-     * @param _rpcNodes rpc节点服务器地址列表
+     * 井通公链、联盟链RPC服务构造函数
+     * @param alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+     * @param fee 每笔交易燃料费(燃料费计算公式=fee/1000000)
+     * @param baseToken 交易燃料手续费通证,也是公链的本币
+     * @param issuer 银关地址
+     * @param rpcNodes rpc节点服务器地址列表
      */
-    public JccJingtum(String _alphabet, Integer _fee, String _baseToken, String _issuer, ArrayList<String> _rpcNodes) {
-        this(_fee,_baseToken,_issuer,_rpcNodes);
-        Config.setAlphabet(_alphabet);
+    public JccJingtum(String alphabet, Integer fee, String baseToken, String issuer, ArrayList<String> rpcNodes) {
+        this(fee,baseToken,issuer,rpcNodes);
+        Config.setAlphabet(alphabet);
     }
 
     /**
-     * 联盟链RPC服务构造函数
-     * @param _alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
-     * @param _fee 交易手续费
-     * @param _baseToken 交易燃料手续费通证,也是公链的本币
-     * @param _issuer 银关地址
-     * @param _platform 交易平台收费账号
-     * @param _rpcNodes rpc节点服务器地址列表
+     * 井通公链、联盟链RPC服务构造函数
+     * @param alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+     * @param fee 交易手续费(燃料费计算公式=fee/1000000)
+     * @param baseToken 交易燃料手续费通证,也是公链的本币
+     * @param issuer 银关地址
+     * @param platform 交易平台账号
+     * @param rpcNodes rpc节点服务器地址列表
      */
-    public JccJingtum(String _alphabet, Integer _fee, String _baseToken, String _issuer, String _platform, ArrayList<String> _rpcNodes) {
-        this(_alphabet,_fee,_baseToken,_issuer,_rpcNodes);
-        Config.setPlatform(_platform);
+    public JccJingtum(String alphabet, Integer fee, String baseToken, String issuer, String platform, ArrayList<String> rpcNodes) {
+        this(alphabet,fee,baseToken,issuer,rpcNodes);
+        Config.setPlatform(platform);
     }
 
     /**
      * 设置每笔交易燃料费
-     * @param _fee
+     * @param fee (燃料费计算公式=fee/1000000)
      */
-    public void setFee(Integer _fee) throws  Exception{
+    public void setFee(Integer fee) throws  Exception{
         try {
-            if(_fee <=0) {
+            if(fee <=0) {
                 throw new Exception("燃料费不能小于等于0");
             }
-            Config.setFee(_fee);
+            Config.setFee(fee);
         } catch (Exception e) {
             throw new Exception("设置燃料费异常");
         }
@@ -94,7 +104,7 @@ public class JccJingtum {
 
     /**
      * 获取每笔交易燃料费
-     * @return
+     * @return 每笔交易燃料费
      */
     public Integer getFee() {
         return Config.FEE;
@@ -102,34 +112,38 @@ public class JccJingtum {
 
     /**
      * 设置交易平台账号
-     * @param _platform
+     * @param platform 交易平台账号
      */
-    public void setPlatform(String _platform) throws  Exception{
+    public void setPlatform(String platform) throws  Exception{
         try {
-            if(!Wallet.isValidAddress(_platform)) {
+            if(!Wallet.isValidAddress(platform)) {
                 throw new Exception("平台账号不合法");
             }
-            Config.setPlatform(_platform);
+            Config.setPlatform(platform);
         } catch (Exception e) {
             throw new Exception("设置交易平台账号异常");
         }
     }
 
+    /**
+     * 获取交易平台账号
+     * @return 交易平台账号
+     */
     public String getPlatform() {
         return Config.PLATFORM;
     }
 
     /**
      * 创建钱包(账号)
-     * @return json字符串({"secret":****,"address":****})
+     * @return 钱包字符串,json格式 ({"secret":****,"address":****})
      * @throws Exception
      */
     public String createWallet()  throws Exception {
         try {
             ObjectNode data = new ObjectMapper().createObjectNode();
-            Wallet _w = Wallet.generate();
-            data.put("secret",_w.getSecret());
-            data.put("address",_w.getAddress());
+            Wallet wallet = Wallet.generate();
+            data.put("secret",wallet.getSecret());
+            data.put("address",wallet.getAddress());
             return data.toString();
         } catch (Exception e) {
             throw new Exception("创建钱包异常");
@@ -138,17 +152,17 @@ public class JccJingtum {
 
     /**
      * 通过钱包密钥获取钱包地址
-     * @param _secret
-     * @return
+     * @param secret
+     * @return 钱包地址
      * @throws Exception
      */
-    public String getWalletAddress(String _secret) throws  Exception {
+    public String getWalletAddress(String secret) throws  Exception {
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
-            Wallet _w = Wallet.fromSecret(_secret);
-            return _w.getAddress();
+            Wallet wallet = Wallet.fromSecret(secret);
+            return wallet.getAddress();
         } catch (Exception e) {
             throw new Exception("创建钱包异常");
         }
@@ -156,20 +170,20 @@ public class JccJingtum {
 
     /**
      * 设置出错尝试次数
-     * @param _tryTimes 次数
+     * @param tryTimes 次数
      */
-    public void setTryTimes(int _tryTimes) {
-        this.tryTimes = _tryTimes;
+    public void setTryTimes(int tryTimes) {
+        this.tryTimes = tryTimes;
     }
     /**
-     * 获取余额
-     * @param _address 钱包地址
-     * @return
+     * 获取sequence
+     * @param address 钱包地址
+     * @return sequence
      * @throws Exception
      */
-    private String sequence(String _address) throws Exception {
+    private String getSequence(String address) throws Exception {
         try {
-            if(!Wallet.isValidAddress(_address)) {
+            if(!Wallet.isValidAddress(address)) {
                 throw new Exception("钱包地址不合法");
             }
         } catch (Exception e) {
@@ -184,7 +198,7 @@ public class JccJingtum {
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode data = mapper.createObjectNode();
                 ObjectNode object = mapper.createObjectNode();
-                object.put("account", _address);
+                object.put("account", address);
                 ArrayList<ObjectNode> params = new ArrayList<>();
                 params.add(object);
                 ArrayNode array = mapper.valueToTree(params);
@@ -194,7 +208,7 @@ public class JccJingtum {
                 String url = rpcNode.getUrls();
                 String res = OkhttpUtil.post(url, data.toString());
                 String code = JSONObject.parseObject(res).getJSONObject("result").getString("status");
-                if("success".equals(code)) {
+                if(SUCCESS_CODE.equals(code)) {
                     sequence = JSONObject.parseObject(res).getJSONObject("result").getJSONObject("account_data").getString("Sequence");
                 }
 
@@ -221,9 +235,9 @@ public class JccJingtum {
      * 从指定的rpc节点服务器获取获取交易详情
      * @param hash 交易hash
      * @param rpcNode rpc节点服务器
-     * @return
+     * @return 交易详情 json格式
      */
-    private String _requestTx(String hash, String rpcNode) throws Exception {
+    private String requestTx(String hash, String rpcNode) throws Exception {
         String tx = "";
 
         int times = this.tryTimes;
@@ -244,7 +258,7 @@ public class JccJingtum {
                 String status = JSONObject.parseObject(res).getJSONObject("result").getString("status");
                 Boolean validated = JSONObject.parseObject(res).getJSONObject("result").getBoolean("validated");
 //                if ("success".equals(status) && validated) {
-                if ("success".equals(status)) {
+                if (SUCCESS_CODE.equals(status)) {
                     tx = res;
                 }
 
@@ -270,10 +284,10 @@ public class JccJingtum {
 
     /**
      * 根据hash获取交易详情
-     * @param _hash 交易hash
-     * @return
+     * @param hash 交易hash
+     * @return 交易详情 json格式
      */
-    public String requestTx(String _hash) throws Exception {
+    public String requestTx(String hash) throws Exception {
         String tx = "";
 
         int times = this.tryTimes;
@@ -282,7 +296,7 @@ public class JccJingtum {
                 times--;
 
                 String url = rpcNode.getUrls();
-                tx = this._requestTx(_hash,url);
+                tx = this.requestTx(hash,url);
 
                 if (!tx.isEmpty()) {
                     break;
@@ -305,13 +319,13 @@ public class JccJingtum {
     }
     /**
      * 16进制备注内容直接转换成为字符串(无需Unicode解码)
-     * @param _hexStrMemData
-     * @return
+     * @param hexStrMemData
+     * @return 备注内容
      * @throws Exception
      */
-    public String getMemoData(String _hexStrMemData) throws Exception{
+    public String getMemoData(String hexStrMemData) throws Exception{
         try {
-            return Utils.hexStrToStr(_hexStrMemData);
+            return Utils.hexStrToStr(hexStrMemData);
         } catch (Exception e) {
             throw new Exception("获取备注内容失败");
         }
@@ -319,42 +333,43 @@ public class JccJingtum {
 
     /**
      *  安全转账，每笔交易都会校验是否成功，适合普通转账，优点：每笔交易都进行确认，缺点：转账效率低下
-     * @param _secret 发送者钱包密钥
-     * @param _receiver 接收者钱包地址
-     * @param _token 转账Token
-     * @param _amount 转账数量
-     * @param _memos  转账辈子
+     * @param secret 发送者钱包密钥
+     * @param receiver 接收者钱包地址
+     * @param pToken 转账Token
+     * @param pAmount 转账数量
+     * @param memos  转账备注
+     * @return 交易详情 json格式
      * @throws Exception
      */
-    public String safePayment(String _secret, String _receiver, String _token, String _amount, String _memos) throws Exception {
+    public String safePayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
-            if(!Wallet.isValidAddress(_receiver)) {
+            if(!Wallet.isValidAddress(receiver)) {
                 throw new Exception("钱包地址不合法");
             }
 
-            if(_token.isEmpty()) {
+            if(pToken.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            if(_amount.isEmpty()) {
+            if(pAmount.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            Wallet wallet = Wallet.fromSecret(_secret);
+            Wallet wallet = Wallet.fromSecret(secret);
             String sender = wallet.getAddress();
-            String sequence = this.sequence(sender);
+            String sequence = this.getSequence(sender);
 
             ObjectMapper mapper = new ObjectMapper();
-            String token = _token.toUpperCase();
+            String token = pToken.toUpperCase();
             Amount amount;
             Payment payment = new Payment();
             payment.as(AccountID.Account, sender);
-            payment.as(AccountID.Destination, _receiver);
+            payment.as(AccountID.Destination, receiver);
 
-            BigDecimal bigDecimal = new BigDecimal(_amount);
+            BigDecimal bigDecimal = new BigDecimal(pAmount);
             if(bigDecimal.compareTo(new BigDecimal(0)) < 1){
                 throw new Exception("token数量不能小于等于0");
             }
@@ -371,17 +386,17 @@ public class JccJingtum {
             payment.sequence(new UInt32(sequence));
             payment.flags(new UInt32(0));
 
-            if (_memos.length() > 0) {
-                ArrayList<String> _memoList = new ArrayList<>(1);
-                _memoList.add(_memos);
-                payment.addMemo(_memoList);
+            if (memos.length() > 0) {
+                ArrayList<String> memoList = new ArrayList<>(1);
+                memoList.add(memos);
+                payment.addMemo(memoList);
             }
 
-            SignedTransaction _tx = payment.sign(_secret);
-            String blob = _tx.tx_blob;
-            String hash = _tx.hash.toHex();
+            SignedTransaction tx = payment.sign(secret);
+            String blob = tx.tx_blob;
+            String hash = tx.hash.toHex();
             int times = this.tryTimes;
-            String tx = "";
+            String res = "";
 
             ObjectNode data = mapper.createObjectNode();
             ObjectNode object = mapper.createObjectNode();
@@ -396,12 +411,11 @@ public class JccJingtum {
             do{
                 times--;
                 String url = rpcNode.getUrls();
-//                System.out.println(url);
                 String result = OkhttpUtil.post(url, data.toString());
                 Thread.sleep(1000);
                 try {
-                    tx = this._requestTx(hash,url);
-                    if(!tx.isEmpty()) {
+                    res = this.requestTx(hash,url);
+                    if(!res.isEmpty()) {
                         break;
                     }
                 }catch (Exception e) {
@@ -411,10 +425,10 @@ public class JccJingtum {
                 Thread.sleep(1000);
             }while(times > 0);
 
-            if(tx.isEmpty()) {
+            if(res.isEmpty()) {
                 throw new Exception("转账失败");
             } else {
-                return hash;
+                return res;
             }
         } catch (Exception e) {
             throw e;
@@ -423,41 +437,42 @@ public class JccJingtum {
 
     /**
      *  快速转账，每笔交易不校验是否成功，适用于批量转账，优点：转账效率高，缺点：交易成功率无法保证，需要调用者自己进行校验
-     * @param _secret 发送者钱包密钥
-     * @param _receiver 接收者钱包地址
-     * @param _token 转账Token
-     * @param _amount 转账数量
-     * @param _memos  转账辈子
+     * @param secret 发送者钱包密钥
+     * @param receiver 接收者钱包地址
+     * @param pToken 转账Token
+     * @param pAmount 转账数量
+     * @param memos  转账备注
+     * @return 交易详情 json格式
      * @throws Exception
      */
-    public String fastPayment(String _secret, String _receiver, String _token, String _amount, String _memos) throws Exception {
+    public String fastPayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
-            if(!Wallet.isValidAddress(_receiver)) {
+            if(!Wallet.isValidAddress(receiver)) {
                 throw new Exception("钱包地址不合法");
             }
-            if(_token.isEmpty()) {
+            if(pToken.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            if(_amount.isEmpty()) {
+            if(pAmount.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            Wallet wallet = Wallet.fromSecret(_secret);
+            Wallet wallet = Wallet.fromSecret(secret);
             String sender = wallet.getAddress();
-            String sequence = this.sequence(sender);
+            String sequence = this.getSequence(sender);
 
             ObjectMapper mapper = new ObjectMapper();
-            String token = _token.toUpperCase();
+            String token = pToken.toUpperCase();
             Amount amount;
             Payment payment = new Payment();
             payment.as(AccountID.Account, sender);
-            payment.as(AccountID.Destination, _receiver);
+            payment.as(AccountID.Destination, receiver);
 
-            BigDecimal bigDecimal = new BigDecimal(_amount);
+            BigDecimal bigDecimal = new BigDecimal(pAmount);
             if(bigDecimal.compareTo(new BigDecimal(0)) < 1){
                 throw new Exception("token数量不能小于等于0");
             }
@@ -474,15 +489,15 @@ public class JccJingtum {
             payment.sequence(new UInt32(sequence));
             payment.flags(new UInt32(0));
 
-            if (_memos.length() > 0) {
-                ArrayList<String> _memoList = new ArrayList<>(1);
-                _memoList.add(_memos);
-                payment.addMemo(_memoList);
+            if (memos.length() > 0) {
+                ArrayList<String> memoList = new ArrayList<>(1);
+                memoList.add(memos);
+                payment.addMemo(memoList);
             }
 
-            SignedTransaction _tx = payment.sign(_secret);
-            String blob = _tx.tx_blob;
-            String hash = _tx.hash.toHex();
+            SignedTransaction tx = payment.sign(secret);
+            String blob = tx.tx_blob;
+            String hash = tx.hash.toHex();
             String result = "";
             int times = this.tryTimes;;
 
@@ -501,7 +516,7 @@ public class JccJingtum {
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if("tesSUCCESS".equals(status)) {
+                if(TX_SUCCESS_CODE.equals(status)) {
                     break;
                 } else {
                     result = "";
@@ -523,42 +538,43 @@ public class JccJingtum {
 
     /**
      * 安全挂单，每笔挂单都会校验是否成功，适合普通调用，优点：每笔交易都进行确认，缺点：效率低下
-     * @param _secret 挂单方钱包密钥
-     * @param _payToke  挂单方支付的Token名称
-     * @param _payAmount 挂单方支付的Token数量
-     * @param _getToken  挂单方期望得到的Token名称
-     * @param _getAmount 挂单方期望得到的Token数量
-     * @param _memos 备注
+     * @param secret 挂单方钱包密钥
+     * @param pPayToke  挂单方支付的Token名称
+     * @param pPayAmount 挂单方支付的Token数量
+     * @param pGetToken  挂单方期望得到的Token名称
+     * @param pGetAmount 挂单方期望得到的Token数量
+     * @param memos 备注
+     * @return 交易详情 json格式
      * @return
      */
-    public String safeCreateOrder(String _secret, String _payToke, String _payAmount, String _getToken, String _getAmount, String _memos) throws Exception{
+    public String safeCreateOrder(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
 
-            if(_payToke.isEmpty() || _getToken.isEmpty()) {
+            if(pPayToke.isEmpty() || pGetToken.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            if(_payAmount.isEmpty() || _getAmount.isEmpty()) {
+            if(pPayAmount.isEmpty() || pGetAmount.isEmpty()) {
                 throw new Exception("token数量不合法");
             }
 
-            Wallet wallet = Wallet.fromSecret(_secret);
+            Wallet wallet = Wallet.fromSecret(secret);
             String address = wallet.getAddress();
 
             ObjectMapper mapper = new ObjectMapper();
-            String payToken = _payToke.toUpperCase();
-            String getToken = _getToken.toUpperCase();
+            String payToken = pPayToke.toUpperCase();
+            String getToken = pGetToken.toUpperCase();
 
             OfferCreate offerCreate = new OfferCreate();
             offerCreate.as(AccountID.Account, address);
             offerCreate.as(AccountID.Platform, Config.PLATFORM);
 
             Amount payAmount;
-            BigDecimal payBigDecimal = new BigDecimal(_payAmount);
-            BigDecimal getBigDecimal = new BigDecimal(_getAmount);
+            BigDecimal payBigDecimal = new BigDecimal(pPayAmount);
+            BigDecimal getBigDecimal = new BigDecimal(pGetAmount);
 
             if(payBigDecimal.compareTo(new BigDecimal(0)) < 1){
                 throw new Exception("token数量不能小于等于0");
@@ -586,21 +602,20 @@ public class JccJingtum {
 
             offerCreate.as(Amount.Fee, String.valueOf(Config.FEE));
 
-            String sequence = this.sequence(address);
+            String sequence = this.getSequence(address);
             offerCreate.sequence(new UInt32(sequence));
 
-            if (_memos.length() > 0) {
-                ArrayList<String> _memoList = new ArrayList<>(1);
-                _memoList.add(_memos);
-                offerCreate.addMemo(_memoList);
+            if (memos.length() > 0) {
+                ArrayList<String> memoList = new ArrayList<>(1);
+                memoList.add(memos);
+                offerCreate.addMemo(memoList);
             }
 
-            SignedTransaction _tx = offerCreate.sign(_secret);
-            String blob = _tx.tx_blob;
-            String hash = _tx.hash.toHex();
-//            System.out.println(hash);
+            SignedTransaction tx = offerCreate.sign(secret);
+            String blob = tx.tx_blob;
+            String hash = tx.hash.toHex();
             int times = this.tryTimes;
-            String tx = "";
+            String res = "";
             String result = "";
 
             ObjectNode data = mapper.createObjectNode();
@@ -620,8 +635,8 @@ public class JccJingtum {
 
                 Thread.sleep(1000);
                 try {
-                    tx = this._requestTx(hash,url);
-                    if(!tx.isEmpty()) {
+                    res = this.requestTx(hash,url);
+                    if(!res.isEmpty()) {
                         break;
                     }
                 }catch (Exception e) {
@@ -631,10 +646,10 @@ public class JccJingtum {
                 Thread.sleep(1000);
             }while(times > 0);
 
-            if(tx.isEmpty()) {
+            if(res.isEmpty()) {
                 throw new Exception("挂单失败");
             } else {
-                return tx;
+                return res;
             }
         } catch (Exception e) {
             throw e;
@@ -644,41 +659,41 @@ public class JccJingtum {
 
     /**
      * 快速挂单，每笔交易不校验是否成功，适用于批量挂单，优点：挂单效率高，缺点：交易成功率无法保证，需要调用者自己进行校验
-     * @param _secret 挂单方钱包密钥
-     * @param _payToke  挂单方支付的Token名称
-     * @param _payAmount 挂单方支付的Token数量
-     * @param _getToken  挂单方期望得到的Token名称
-     * @param _getAmount 挂单方期望得到的Token数量
-     * @param _memos 备注
-     * @return
+     * @param secret 挂单方钱包密钥
+     * @param pPayToke  挂单方支付的Token名称
+     * @param pPayAmount 挂单方支付的Token数量
+     * @param pGetToken  挂单方期望得到的Token名称
+     * @param pGetAmount 挂单方期望得到的Token数量
+     * @param memos 备注
+     * @return 交易详情 json格式
      */
-    public String fastCreateOrder(String _secret, String _payToke, String _payAmount, String _getToken, String _getAmount, String _memos) throws Exception{
+    public String fastCreateOrder(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
 
-            if(_payToke.isEmpty() || _getToken.isEmpty()) {
+            if(pPayToke.isEmpty() || pGetToken.isEmpty()) {
                 throw new Exception("token名称不合法");
             }
 
-            if(_payAmount.isEmpty() || _getAmount.isEmpty()) {
+            if(pPayAmount.isEmpty() || pGetAmount.isEmpty()) {
                 throw new Exception("token数量不合法");
             }
 
-            Wallet wallet = Wallet.fromSecret(_secret);
+            Wallet wallet = Wallet.fromSecret(secret);
             String address = wallet.getAddress();
 
-            String payToken = _payToke.toUpperCase();
-            String getToken = _getToken.toUpperCase();
+            String payToken = pPayToke.toUpperCase();
+            String getToken = pGetToken.toUpperCase();
 
             OfferCreate offerCreate = new OfferCreate();
             offerCreate.as(AccountID.Account, address);
             offerCreate.as(AccountID.Platform, Config.PLATFORM);
 
             Amount payAmount;
-            BigDecimal payBigDecimal = new BigDecimal(_payAmount);
-            BigDecimal getBigDecimal = new BigDecimal(_getAmount);
+            BigDecimal payBigDecimal = new BigDecimal(pPayAmount);
+            BigDecimal getBigDecimal = new BigDecimal(pGetAmount);
 
             if(payBigDecimal.compareTo(new BigDecimal(0)) < 1){
                 throw new Exception("token数量不能小于等于0");
@@ -706,18 +721,18 @@ public class JccJingtum {
 
             offerCreate.as(Amount.Fee, String.valueOf(Config.FEE));
 
-            String sequence = this.sequence(address);
+            String sequence = this.getSequence(address);
             offerCreate.sequence(new UInt32(sequence));
 
-            if (_memos.length() > 0) {
-                ArrayList<String> _memoList = new ArrayList<>(1);
-                _memoList.add(_memos);
-                offerCreate.addMemo(_memoList);
+            if (memos.length() > 0) {
+                ArrayList<String> memoList = new ArrayList<>(1);
+                memoList.add(memos);
+                offerCreate.addMemo(memoList);
             }
 
-            SignedTransaction _tx = offerCreate.sign(_secret);
-            String blob = _tx.tx_blob;
-            String hash = _tx.hash.toHex();
+            SignedTransaction tx = offerCreate.sign(secret);
+            String blob = tx.tx_blob;
+            String hash = tx.hash.toHex();
             int times = this.tryTimes;;
             String result = "";
 
@@ -737,7 +752,7 @@ public class JccJingtum {
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if("tesSUCCESS".equals(status)) {
+                if(TX_SUCCESS_CODE.equals(status)) {
                     break;
                 } else {
                     result = "";
@@ -760,38 +775,38 @@ public class JccJingtum {
 
     /**
      * 取消挂单
-     * @param _secret 钱包密钥
-     * @param _sequence 挂单序列号
-     * @return
+     * @param secret 钱包密钥
+     * @param pSequence 挂单序列号
+     * @return 交易详情 json格式
      */
-    public String cancleOrder(String _secret, String _sequence) throws Exception{
+    public String cancleOrder(String secret, String pSequence) throws Exception{
         try {
-            if(!Wallet.isValidSecret(_secret)) {
+            if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
             }
 
-            BigDecimal bigDecimal = new BigDecimal(_sequence);
+            BigDecimal bigDecimal = new BigDecimal(pSequence);
 
             if(bigDecimal.compareTo(new BigDecimal(0)) < 1){
                 throw new Exception("sequence不能小于等于0");
             }
 
 
-            Wallet wallet = Wallet.fromSecret(_secret);
+            Wallet wallet = Wallet.fromSecret(secret);
             String address = wallet.getAddress();
 
             OfferCancel offerCancel = new OfferCancel();
             offerCancel.as(AccountID.Account, address);
             offerCancel.as(UInt32.OfferSequence, bigDecimal.longValue());
             offerCancel.as(Amount.Fee, String.valueOf(Config.FEE));
-            String sequence = this.sequence(address);
+            String sequence = this.getSequence(address);
             offerCancel.sequence(new UInt32(sequence));
 
-            SignedTransaction _tx = offerCancel.sign(_secret);
-            String blob = _tx.tx_blob;
-            String hash = _tx.hash.toHex();
+            SignedTransaction tx = offerCancel.sign(secret);
+            String blob = tx.tx_blob;
+            String hash = tx.hash.toHex();
             int times = this.tryTimes;
-            String tx = "";
+            String res = "";
             String result = "";
 
             ObjectMapper mapper = new ObjectMapper();
@@ -809,9 +824,8 @@ public class JccJingtum {
                 times--;
                 String url = rpcNode.getUrls();
                 result = OkhttpUtil.post(url, data.toString());
-//                System.out.println(result);
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if("tesSUCCESS".equals(status)) {
+                if(TX_SUCCESS_CODE.equals(status)) {
                     break;
                 } else {
                     result = "";
