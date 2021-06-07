@@ -19,7 +19,7 @@ public abstract class AServerNode {
      * @return 服务器地址
      * @throws Exception
      */
-    public String getUrls() throws Exception{
+    public String randomUrl() throws Exception{
         try {
             Random random = new Random();
             int index = random.nextInt(this.urls.size());
@@ -27,5 +27,14 @@ public abstract class AServerNode {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    /**
+     * 获取rpc服务器列表
+     * @return 获取rpc服务器列表
+     * @throws Exception
+     */
+    public ArrayList<String> getUrls() throws Exception {
+        return this.urls;
     }
 }

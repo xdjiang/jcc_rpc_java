@@ -20,6 +20,7 @@ import com.jccdex.rpc.utils.Utils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 //
 /**
  * 井通公链、联盟链RPC开发接口
@@ -205,7 +206,7 @@ public class JccJingtum {
                 data.put("method", "account_info");
                 data.set("params", array);
 
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 String res = OkhttpUtil.post(url, data.toString());
                 String code = JSONObject.parseObject(res).getJSONObject("result").getString("status");
                 if(SUCCESS_CODE.equals(code)) {
@@ -232,52 +233,33 @@ public class JccJingtum {
     }
 
     /**
-     * 从指定的rpc节点服务器获取获取交易详情
+     * 向指定的rpc节点服务器获取获取交易详情
      * @param hash 交易hash
      * @param rpcNode rpc节点服务器
      * @return 交易详情 json格式
      */
-    private String requestTx(String hash, String rpcNode) throws Exception {
+    private String requestTx(String hash, String rpcNode) {
         String tx = "";
-
-        int times = this.tryTimes;
-        do{
-            try {
-                times--;
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode data = mapper.createObjectNode();
-                ObjectNode object = mapper.createObjectNode();
-                object.put("transaction", hash);
-                object.put("binary", false);
-                ArrayList<ObjectNode> params = new ArrayList();
-                params.add(object);
-                ArrayNode array = (ArrayNode) mapper.valueToTree(params);
-                data.put("method", "tx");
-                data.set("params", array);
-                String res = OkhttpUtil.post(rpcNode, data.toString());
-                String status = JSONObject.parseObject(res).getJSONObject("result").getString("status");
-                Boolean validated = JSONObject.parseObject(res).getJSONObject("result").getBoolean("validated");
-//                if ("success".equals(status) && validated) {
-                if (SUCCESS_CODE.equals(status)) {
-                    tx = res;
-                }
-
-                if (!tx.isEmpty()) {
-                    break;
-                }
-
-                //延时500毫秒
-                Thread.sleep(1000);
-                continue;
-            }catch (Exception e) {
-                continue;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode data = mapper.createObjectNode();
+            ObjectNode object = mapper.createObjectNode();
+            object.put("transaction", hash);
+            object.put("binary", false);
+            ArrayList<ObjectNode> params = new ArrayList();
+            params.add(object);
+            ArrayNode array = (ArrayNode) mapper.valueToTree(params);
+            data.put("method", "tx");
+            data.set("params", array);
+            String res = OkhttpUtil.post(rpcNode, data.toString());
+            String status = JSONObject.parseObject(res).getJSONObject("result").getString("status");
+            Boolean validated = JSONObject.parseObject(res).getJSONObject("result").getBoolean("validated");
+            if (SUCCESS_CODE.equals(status) && validated) {
+//                if (SUCCESS_CODE.equals(status)) {
+                tx = res;
             }
-
-        } while(times > 0);
-
-        if(tx.isEmpty()) {
-            throw new Exception("获取交易信息失败");
-        } else {
+            return tx;
+        }catch (Exception e) {
             return tx;
         }
     }
@@ -289,27 +271,19 @@ public class JccJingtum {
      */
     public String requestTx(String hash) throws Exception {
         String tx = "";
-
-        int times = this.tryTimes;
-        do{
-            try {
-                times--;
-
-                String url = rpcNode.getUrls();
+        try {
+            ArrayList<String> list = rpcNode.getUrls();
+            Iterator it = list.iterator();
+            while(it.hasNext()) {
+                String url = (String) it.next();
                 tx = this.requestTx(hash,url);
-
                 if (!tx.isEmpty()) {
                     break;
                 }
-
-                //延时500毫秒
-                Thread.sleep(1000);
-                continue;
-            }catch (Exception e) {
-                continue;
             }
-
-        } while(times > 0);
+        }catch (Exception e) {
+            throw new Exception("获取交易信息失败");
+        }
 
         if(tx.isEmpty()) {
             throw new Exception("获取交易信息失败");
@@ -410,11 +384,11 @@ public class JccJingtum {
 
             do{
                 times--;
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 String result = OkhttpUtil.post(url, data.toString());
                 Thread.sleep(1000);
                 try {
-                    res = this.requestTx(hash,url);
+                    res = this.requestTx(hash);
                     if(!res.isEmpty()) {
                         break;
                     }
@@ -513,7 +487,7 @@ public class JccJingtum {
 
             do {
                 times--;
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
                 if(TX_SUCCESS_CODE.equals(status)) {
@@ -630,12 +604,12 @@ public class JccJingtum {
 
             do{
                 times--;
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 result = OkhttpUtil.post(url, data.toString());
 
                 Thread.sleep(1000);
                 try {
-                    res = this.requestTx(hash,url);
+                    res = this.requestTx(hash);
                     if(!res.isEmpty()) {
                         break;
                     }
@@ -749,7 +723,7 @@ public class JccJingtum {
 
             do{
                 times--;
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
                 if(TX_SUCCESS_CODE.equals(status)) {
@@ -822,7 +796,7 @@ public class JccJingtum {
 
             do{
                 times--;
-                String url = rpcNode.getUrls();
+                String url = rpcNode.randomUrl();
                 result = OkhttpUtil.post(url, data.toString());
                 String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
                 if(TX_SUCCESS_CODE.equals(status)) {
