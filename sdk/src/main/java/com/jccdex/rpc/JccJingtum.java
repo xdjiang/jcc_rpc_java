@@ -386,6 +386,11 @@ public class JccJingtum {
                 times--;
                 String url = rpcNode.randomUrl();
                 String result = OkhttpUtil.post(url, data.toString());
+                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
+                if(!TX_SUCCESS_CODE.equals(status)) {
+                    res = result;
+                    break;
+                }
                 Thread.sleep(1000);
                 try {
                     res = this.requestTx(hash);
@@ -606,7 +611,11 @@ public class JccJingtum {
                 times--;
                 String url = rpcNode.randomUrl();
                 result = OkhttpUtil.post(url, data.toString());
-
+                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
+                if(!TX_SUCCESS_CODE.equals(status)) {
+                    res = result;
+                    break;
+                }
                 Thread.sleep(1000);
                 try {
                     res = this.requestTx(hash);

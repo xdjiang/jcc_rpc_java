@@ -90,11 +90,12 @@ public class ECDSASignature {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * DER is an international standard for serializing data structures which is widely used in cryptography.
 	 * It's somewhat like protocol buffers but less convenient. This method returns a standard DER encoding
 	 * of the signature, as recognized by OpenSSL and other libraries.
+	 * @return encoding byte array
 	 */
 	public byte[] encodeToDER() {
 		try {

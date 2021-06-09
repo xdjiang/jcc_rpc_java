@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jccdex</groupId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
     <artifactId>JccRPC</artifactId>
     <name>JccRPC</name>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.12.0</version>
+            <version>4.9.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -60,22 +60,28 @@
             <artifactId>jackson-annotations</artifactId>
             <version>2.11.2</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.11.2</version>
         </dependency>
         <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.75</version>
+        </dependency>
+        <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>1.1.0.Final</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.60</version>
+            <version>1.68</version>
         </dependency>
+
         <dependency>
             <groupId>io.github.jccdex</groupId>
             <artifactId>JccWallet</artifactId>
@@ -158,6 +164,24 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                            <doclint>none</doclint>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>1.6</version>
                         <executions>
@@ -214,39 +238,18 @@
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
-                    <!--生成doc jar包-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <!-- 解决控制台乱码 -->
-                            <aggregate>true</aggregate>
-                            <charset>UTF-8</charset>
-                            <encoding>UTF-8</encoding>
-                            <docencoding>UTF-8</docencoding>
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
             <distributionManagement>
                 <snapshotRepository>
                     <id>ossrh</id>
                     <name>Sonatype Nexus Snapshots</name>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
                 <repository>
                     <id>ossrh</id>
                     <name>Nexus Release Repository</name>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
         </profile>
