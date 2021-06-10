@@ -59,9 +59,9 @@ public class JccJingtumTest extends TestCase {
 //            System.out.println(e.toString());
 //        }
 //    }
-
+//
     @Test
-    public void testPayment() {
+    public void testSafePayment() {
 
         System.out.println("in testPayment");
         try {
@@ -91,36 +91,50 @@ public class JccJingtumTest extends TestCase {
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-
     }
 
-//    @Test
-//    public void testFastCreateTx() {
-//
-//        System.out.println("in testCreateTx");
-//        try {
-//            System.out.println(System.currentTimeMillis());
-//            String ret = jccJingtum.fastCreateOrder(wallet1.getSecret(),"SWT","1","CNY","1","test");
-//            System.out.println(System.currentTimeMillis());
-//            System.out.println(ret);
-//
-//
-//        } catch (Exception e) {
-//            System.out.println(e.toString());
-//        }
-//
-//    }
+    @Test
+    public void testFastPaymen() {
+        System.out.println("in testFastPaymen");
+        try {
+            long st = System.currentTimeMillis();
+            String ret = jccJingtum.fastPayment(wallet1.getSecret(),wallet2.getAddress(),"SWT","1","test");
+            System.out.println(ret);
+            long t = System.currentTimeMillis()-st;
+            System.out.println("耗时："+t);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
 
-//    @Test
-//    public void testCancleOrder() {
-//
-//        System.out.println("in testCancleOrder");
-//        try {
-//            String ret = jccJingtum.cancleOrder(wallet1.getSecret(),"2345");
-//        } catch (Exception e) {
-//            System.out.println(e.toString());
-//        }
-//    }
+    @Test
+    public void testFastCreateTx() {
+        System.out.println("in testCreateTx");
+        try {
+            long st = System.currentTimeMillis();
+            String ret = jccJingtum.fastCreateOrder(wallet1.getSecret(),"SWT","1","CNY","1","test");
+            System.out.println(ret);
+            long t = System.currentTimeMillis()-st;
+            System.out.println("耗时："+t);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    @Test
+    public void testCancleOrder() {
+
+        System.out.println("in testCancleOrder");
+        try {
+            long st = System.currentTimeMillis();
+            String ret = jccJingtum.cancleOrder(wallet1.getSecret(),"2345");
+            System.out.println(ret);
+            long t = System.currentTimeMillis()-st;
+            System.out.println("耗时："+t);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
 
 //    @Test
 //    public void testRequestTX() {

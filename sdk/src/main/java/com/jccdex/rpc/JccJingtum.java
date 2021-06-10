@@ -27,22 +27,21 @@ import java.util.Iterator;
  * @author xdjiang, shuonimei
  */
 public class JccJingtum {
-    private RpcNode rpcNode;
+    private final RpcNode rpcNode;
     //请求次数
 
     /**
      * 重复请求次数
      */
-    private int tryTimes = 30;
-    private Wallet wallet;
+    private int tryTimes;
     private final String SUCCESS_CODE = "success";
     private final String TX_SUCCESS_CODE = "tesSUCCESS";
 
     /**
-     * rpc节点服务器地址列表
-     * @param rpcNodes
+     * @param rpcNodes rpc节点服务器地址列表
      */
     JccJingtum(ArrayList<String> rpcNodes) {
+        this.tryTimes = rpcNodes.size();
         rpcNode = new RpcNode(rpcNodes);
     }
 
@@ -137,7 +136,7 @@ public class JccJingtum {
     /**
      * 创建钱包(账号)
      * @return 钱包字符串,json格式 ({"secret":****,"address":****})
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     public String createWallet()  throws Exception {
         try {
@@ -153,9 +152,9 @@ public class JccJingtum {
 
     /**
      * 通过钱包密钥获取钱包地址
-     * @param secret
+     * @param secret 钱包密钥
      * @return 钱包地址
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     public String getWalletAddress(String secret) throws  Exception {
         try {
@@ -180,7 +179,7 @@ public class JccJingtum {
      * 获取sequence
      * @param address 钱包地址
      * @return sequence
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     private String getSequence(String address) throws Exception {
         try {
@@ -219,9 +218,7 @@ public class JccJingtum {
 
                 //延时500毫秒
                 Thread.sleep(500);
-                continue;
-            } catch (Exception e) {
-                continue;
+            } catch (Exception ignored) {
             }
         } while(times > 0);
 
@@ -255,7 +252,6 @@ public class JccJingtum {
             String status = JSONObject.parseObject(res).getJSONObject("result").getString("status");
             Boolean validated = JSONObject.parseObject(res).getJSONObject("result").getBoolean("validated");
             if (SUCCESS_CODE.equals(status) && validated) {
-//                if (SUCCESS_CODE.equals(status)) {
                 tx = res;
             }
             return tx;
@@ -268,6 +264,7 @@ public class JccJingtum {
      * 根据hash获取交易详情
      * @param hash 交易hash
      * @return 交易详情 json格式
+     * @throws Exception 抛出异常
      */
     public String requestTx(String hash) throws Exception {
         String tx = "";
@@ -293,9 +290,9 @@ public class JccJingtum {
     }
     /**
      * 16进制备注内容直接转换成为字符串(无需Unicode解码)
-     * @param hexStrMemData
+     * @param hexStrMemData 16进制备注内容
      * @return 备注内容
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     public String getMemoData(String hexStrMemData) throws Exception{
         try {
@@ -313,7 +310,7 @@ public class JccJingtum {
      * @param pAmount 转账数量
      * @param memos  转账备注
      * @return 交易详情 json格式
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     public String safePayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
@@ -367,50 +364,10 @@ public class JccJingtum {
             }
 
             SignedTransaction tx = payment.sign(secret);
-            String blob = tx.tx_blob;
-            String hash = tx.hash.toHex();
-            int times = this.tryTimes;
-            String res = "";
-
-            ObjectNode data = mapper.createObjectNode();
-            ObjectNode object = mapper.createObjectNode();
-            object.put("tx_blob", blob);
-            ArrayList<ObjectNode> params = new ArrayList<>();
-            params.add(object);
-            ArrayNode array = mapper.valueToTree(params);
-
-            data.put("method", "submit");
-            data.set("params", array);
-
-            do{
-                times--;
-                String url = rpcNode.randomUrl();
-                String result = OkhttpUtil.post(url, data.toString());
-                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(!TX_SUCCESS_CODE.equals(status)) {
-                    res = result;
-                    break;
-                }
-                Thread.sleep(1000);
-                try {
-                    res = this.requestTx(hash);
-                    if(!res.isEmpty()) {
-                        break;
-                    }
-                }catch (Exception e) {
-                    continue;
-                }
-                //延时500毫秒
-                Thread.sleep(1000);
-            }while(times > 0);
-
-            if(res.isEmpty()) {
-                throw new Exception("转账失败");
-            } else {
-                return res;
-            }
+            String res = this.submit(tx.tx_blob, tx.hash.toHex());
+            return res;
         } catch (Exception e) {
-            throw e;
+            throw new Exception("转账失败");
         }
     }
 
@@ -422,7 +379,7 @@ public class JccJingtum {
      * @param pAmount 转账数量
      * @param memos  转账备注
      * @return 交易详情 json格式
-     * @throws Exception
+     * @throws Exception 抛出异常
      */
     public String fastPayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
@@ -475,41 +432,8 @@ public class JccJingtum {
             }
 
             SignedTransaction tx = payment.sign(secret);
-            String blob = tx.tx_blob;
-            String hash = tx.hash.toHex();
-            String result = "";
-            int times = this.tryTimes;;
-
-            ObjectNode data = mapper.createObjectNode();
-            ObjectNode object = mapper.createObjectNode();
-            object.put("tx_blob", blob);
-            ArrayList<ObjectNode> params = new ArrayList<>();
-            params.add(object);
-            ArrayNode array = mapper.valueToTree(params);
-
-            data.put("method", "submit");
-            data.set("params", array);
-
-            do {
-                times--;
-                String url = rpcNode.randomUrl();
-                result = OkhttpUtil.post(url, data.toString());
-                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(TX_SUCCESS_CODE.equals(status)) {
-                    break;
-                } else {
-                    result = "";
-                    //延时500毫秒
-                    Thread.sleep(1000);
-                    continue;
-                }
-            }while(times > 0);
-
-            if(result.isEmpty()) {
-                throw new Exception("转账失败");
-            } else {
-                return result;
-            }
+            String res = this.submit(tx.tx_blob);
+            return res;
         } catch (Exception e) {
             throw e;
         }
@@ -524,7 +448,6 @@ public class JccJingtum {
      * @param pGetAmount 挂单方期望得到的Token数量
      * @param memos 备注
      * @return 交易详情 json格式
-     * @return
      */
     public String safeCreateOrder(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
         try {
@@ -591,53 +514,11 @@ public class JccJingtum {
             }
 
             SignedTransaction tx = offerCreate.sign(secret);
-            String blob = tx.tx_blob;
-            String hash = tx.hash.toHex();
-            int times = this.tryTimes;
-            String res = "";
-            String result = "";
-
-            ObjectNode data = mapper.createObjectNode();
-            ObjectNode object = mapper.createObjectNode();
-            object.put("tx_blob", blob);
-            ArrayList<ObjectNode> params = new ArrayList<>();
-            params.add(object);
-            ArrayNode array = mapper.valueToTree(params);
-
-            data.put("method", "submit");
-            data.set("params", array);
-
-            do{
-                times--;
-                String url = rpcNode.randomUrl();
-                result = OkhttpUtil.post(url, data.toString());
-                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(!TX_SUCCESS_CODE.equals(status)) {
-                    res = result;
-                    break;
-                }
-                Thread.sleep(1000);
-                try {
-                    res = this.requestTx(hash);
-                    if(!res.isEmpty()) {
-                        break;
-                    }
-                }catch (Exception e) {
-                    continue;
-                }
-                //延时500毫秒
-                Thread.sleep(1000);
-            }while(times > 0);
-
-            if(res.isEmpty()) {
-                throw new Exception("挂单失败");
-            } else {
-                return res;
-            }
+            String res = this.submit(tx.tx_blob, tx.hash.toHex());
+            return res;
         } catch (Exception e) {
-            throw e;
+            throw new Exception("挂单失败");
         }
-
     }
 
     /**
@@ -714,44 +595,10 @@ public class JccJingtum {
             }
 
             SignedTransaction tx = offerCreate.sign(secret);
-            String blob = tx.tx_blob;
-            String hash = tx.hash.toHex();
-            int times = this.tryTimes;;
-            String result = "";
-
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode data = mapper.createObjectNode();
-            ObjectNode object = mapper.createObjectNode();
-            object.put("tx_blob", blob);
-            ArrayList<ObjectNode> params = new ArrayList<>();
-            params.add(object);
-            ArrayNode array = mapper.valueToTree(params);
-
-            data.put("method", "submit");
-            data.set("params", array);
-
-            do{
-                times--;
-                String url = rpcNode.randomUrl();
-                result = OkhttpUtil.post(url, data.toString());
-                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(TX_SUCCESS_CODE.equals(status)) {
-                    break;
-                } else {
-                    result = "";
-                    //延时500毫秒
-                    Thread.sleep(1000);
-                    continue;
-                }
-            }while(times > 0);
-
-            if(result.isEmpty()) {
-                throw new Exception("挂单失败");
-            } else {
-                return result;
-            }
+            String res = this.submit(tx.tx_blob);
+            return res;
         } catch (Exception e) {
-            throw e;
+            throw new Exception("挂单失败");
         }
 
     }
@@ -786,16 +633,29 @@ public class JccJingtum {
             offerCancel.sequence(new UInt32(sequence));
 
             SignedTransaction tx = offerCancel.sign(secret);
-            String blob = tx.tx_blob;
-            String hash = tx.hash.toHex();
-            int times = this.tryTimes;
-            String res = "";
-            String result = "";
+            String res = this.submit(tx.tx_blob);
+            return res;
+        } catch (Exception e) {
+            throw new Exception("撤单失败");
+        }
+    }
 
+    /**
+     * 向节点发送交易请求，并且根据签名得到的hash进行交易确认
+     * @param txBlob 交易信息
+     * @param hash hash
+     * @return 交易信息
+     * @throws Exception 抛出异常
+     */
+    public String submit(String txBlob, String hash) throws Exception {
+        try {
+            int times = this.tryTimes;
+            String resTx = "";
+            String result = "";
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode data = mapper.createObjectNode();
             ObjectNode object = mapper.createObjectNode();
-            object.put("tx_blob", blob);
+            object.put("tx_blob", txBlob);
             ArrayList<ObjectNode> params = new ArrayList<>();
             params.add(object);
             ArrayNode array = mapper.valueToTree(params);
@@ -805,29 +665,73 @@ public class JccJingtum {
 
             do{
                 times--;
-                String url = rpcNode.randomUrl();
-                result = OkhttpUtil.post(url, data.toString());
-                String status = JSONObject.parseObject(result).getJSONObject("result").getString("engine_result");
-                if(TX_SUCCESS_CODE.equals(status)) {
-                    break;
-                } else {
-                    result = "";
-                    //延时500毫秒
-                    Thread.sleep(1000);
+                try {
+                    String url = rpcNode.randomUrl();
+                    result = OkhttpUtil.post(url, data.toString());
+                    Thread.sleep(5000);
+                    resTx = this.requestTx(hash);
+                    if(!resTx.isEmpty()) {
+                        break;
+                    }
+                }catch (Exception e) {
                     continue;
                 }
-
+                //延时1000毫秒
+                Thread.sleep(1000);
             }while(times > 0);
 
-            if(result.isEmpty()) {
-                throw new Exception("撤单失败");
+            if(resTx.isEmpty()) {
+                return  result;
             } else {
-                return result;
+                return resTx;
             }
         } catch (Exception e) {
             throw e;
         }
+    }
 
+    /**
+     * 向节点发送交易请求
+     * @param txBlob 交易信息
+     * @return 交易信息
+     * @throws Exception 抛出异常
+     */
+    public String submit(String txBlob) throws Exception {
+        try {
+            int times = this.tryTimes;
+            String res = "";
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode data = mapper.createObjectNode();
+            ObjectNode object = mapper.createObjectNode();
+            object.put("tx_blob", txBlob);
+            ArrayList<ObjectNode> params = new ArrayList<>();
+            params.add(object);
+            ArrayNode array = mapper.valueToTree(params);
+
+            data.put("method", "submit");
+            data.set("params", array);
+
+            do{
+                times--;
+                try {
+                    String url = rpcNode.randomUrl();
+                    res = OkhttpUtil.post(url, data.toString());
+                    String status = JSONObject.parseObject(res).getJSONObject("result").getString("engine_result");
+                    if(TX_SUCCESS_CODE.equals(status)) {
+                        break;
+                    }
+                }catch (Exception e) {
+                    continue;
+                }
+                Thread.sleep(1000);
+            }while(times > 0);
+
+            return res;
+
+        } catch (Exception e) {
+            throw new Exception("挂单失败");
+        }
     }
 
 }
