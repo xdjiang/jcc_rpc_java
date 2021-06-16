@@ -40,7 +40,7 @@ public class JccJingtum {
     /**
      * @param rpcNodes rpc节点服务器地址列表
      */
-    JccJingtum(ArrayList<String> rpcNodes) {
+    public JccJingtum(ArrayList<String> rpcNodes) {
         this.tryTimes = rpcNodes.size();
         rpcNode = new RpcNode(rpcNodes);
     }
