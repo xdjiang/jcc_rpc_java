@@ -303,7 +303,7 @@ public class JccJingtum {
     }
 
     /**
-     *  安全转账，每笔交易都会校验是否成功，适合普通转账，优点：每笔交易都进行确认，缺点：转账效率低下
+     *  转账并校验，每笔交易都会校验是否成功，适合普通转账，优点：每笔交易都进行确认，缺点：转账效率低下
      * @param secret 发送者钱包密钥
      * @param receiver 接收者钱包地址
      * @param pToken 转账Token
@@ -312,7 +312,7 @@ public class JccJingtum {
      * @return 交易详情 json格式
      * @throws Exception 抛出异常
      */
-    public String safePayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
+    public String paymentWithCheck(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
             if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
@@ -381,7 +381,7 @@ public class JccJingtum {
      * @return 交易详情 json格式
      * @throws Exception 抛出异常
      */
-    public String fastPayment(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
+    public String paymentNoCheck(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception {
         try {
             if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
@@ -440,7 +440,7 @@ public class JccJingtum {
     }
 
     /**
-     * 安全挂单，每笔挂单都会校验是否成功，适合普通调用，优点：每笔交易都进行确认，缺点：效率低下
+     * 挂单并校验，每笔挂单都会校验是否成功，适合普通调用，优点：每笔交易都进行确认，缺点：效率低下
      * @param secret 挂单方钱包密钥
      * @param pPayToke  挂单方支付的Token名称
      * @param pPayAmount 挂单方支付的Token数量
@@ -449,7 +449,7 @@ public class JccJingtum {
      * @param memos 备注
      * @return 交易详情 json格式
      */
-    public String safeCreateOrder(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
+    public String createOrderWithCheck(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
         try {
             if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");
@@ -531,7 +531,7 @@ public class JccJingtum {
      * @param memos 备注
      * @return 交易详情 json格式
      */
-    public String fastCreateOrder(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
+    public String createOrderNoCheck(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception{
         try {
             if(!Wallet.isValidSecret(secret)) {
                 throw new Exception("钱包密钥不合法");

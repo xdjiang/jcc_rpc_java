@@ -9,8 +9,8 @@ import java.util.ArrayList;
 public class JccJingtumTest extends TestCase {
 
     JccJingtum jccJingtum;
-    Wallet wallet1 = Wallet.fromSecret("ssVvAZrAUj7dxFfLdaVvoVH2VTij2");
-    Wallet wallet2 = Wallet.fromSecret("ssEEef7JHubPGTCLwTLkuu4oqKtD6");
+    Wallet wallet1 = Wallet.fromSecret("******");
+    Wallet wallet2 = Wallet.fromSecret("******");
     public void setUp() throws Exception {
         super.setUp();
         ArrayList<String> rpcNodes = new ArrayList<String>();
@@ -20,15 +20,6 @@ public class JccJingtumTest extends TestCase {
         rpcNodes.add("http://65.95.56.49:5050");
         rpcNodes.add("http://1.13.2.21:5050");
         rpcNodes.add("http://117.78.44.90:5050");
-        rpcNodes.add("http://81.70.132.241:5050");
-        rpcNodes.add("http://106.13.110.77:5050");
-        rpcNodes.add("http://47.119.132.78:5050");
-        rpcNodes.add("http://39.98.243.77:5050");
-        rpcNodes.add("http://106.13.76.104:5050");
-        rpcNodes.add("http://58.243.201.56:5050");
-        rpcNodes.add("http://59.175.148.101:5050");
-        rpcNodes.add("http://47.119.114.140:5050");
-        rpcNodes.add("http://58.243.201.58:5051");
 
         jccJingtum = new JccJingtum(100,"SWT","jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or", rpcNodes);
 //        jccJingtum.setPlatform("");
@@ -66,7 +57,7 @@ public class JccJingtumTest extends TestCase {
         System.out.println("in testPayment");
         try {
             long st = System.currentTimeMillis();
-            String ret = jccJingtum.safePayment(wallet1.getSecret(),wallet2.getAddress(),"SWT","1","test");
+            String ret = jccJingtum.paymentWithCheck(wallet1.getSecret(),wallet2.getAddress(),"SWT","1","test");
             System.out.println(ret);
             long t = System.currentTimeMillis()-st;
             System.out.println("耗时："+t);
@@ -82,7 +73,7 @@ public class JccJingtumTest extends TestCase {
         System.out.println("in testSafeCreateTx");
         try {
             long st = System.currentTimeMillis();
-            String ret = jccJingtum.safeCreateOrder(wallet1.getSecret(),"SWT","1","CNY","1","test");
+            String ret = jccJingtum.createOrderWithCheck(wallet1.getSecret(),"SWT","1","CNY","1","test");
             System.out.println(ret);
             long t = System.currentTimeMillis()-st;
             System.out.println("耗时："+t);
@@ -98,7 +89,7 @@ public class JccJingtumTest extends TestCase {
         System.out.println("in testFastPaymen");
         try {
             long st = System.currentTimeMillis();
-            String ret = jccJingtum.fastPayment(wallet1.getSecret(),wallet2.getAddress(),"SWT","1","test");
+            String ret = jccJingtum.paymentNoCheck(wallet1.getSecret(),wallet2.getAddress(),"SWT","1","test");
             System.out.println(ret);
             long t = System.currentTimeMillis()-st;
             System.out.println("耗时："+t);
@@ -112,7 +103,7 @@ public class JccJingtumTest extends TestCase {
         System.out.println("in testCreateTx");
         try {
             long st = System.currentTimeMillis();
-            String ret = jccJingtum.fastCreateOrder(wallet1.getSecret(),"SWT","1","CNY","1","test");
+            String ret = jccJingtum.createOrderNoCheck(wallet1.getSecret(),"SWT","1","CNY","1","test");
             System.out.println(ret);
             long t = System.currentTimeMillis()-st;
             System.out.println("耗时："+t);
@@ -141,7 +132,7 @@ public class JccJingtumTest extends TestCase {
 //
 //        System.out.println("in testRequestTX");
 //        try {
-//            String res = jccJingtum.requestTx("79A79A06D3271410FDC6EAEAE78A2ACA3D8BD34028BCCFDCC5A035359A5CFB0D");
+//            String res = jccJingtum.requestTx("819B51F9B6B72BB2D7FBC6FBEDC2F3518B03F228B952AD8000F3588E9F905B46");
 //            System.out.println(res);
 //        } catch (Exception e) {
 //            System.out.println(e.toString());
