@@ -22,8 +22,84 @@ jcc rpc java version
 </dependency>
 ```
 
-## 创建钱包(账号)
-### 接口描述
+## 接口描述
+### 构造函数
+```java
+/**
+* @param rpcNodes rpc节点服务器地址列表
+*/
+public JccJingtum(ArrayList<String> rpcNodes)
+
+/**
+* 井通公链、联盟链RPC服务构造函数
+* @param fee 每笔交易燃料费(燃料费计算公式=fee/1000000)
+* @param baseToken 交易燃料手续费通证,也是公链的本币
+* @param issuer 银关地址
+* @param rpcNodes rpc节点服务器地址列表
+*/
+public JccJingtum(Integer fee, String baseToken, String issuer, ArrayList<String> rpcNodes)
+
+/**
+ * 井通公链、联盟链RPC服务构造函数
+ * @param alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+ * @param fee 每笔交易燃料费(燃料费计算公式=fee/1000000)
+ * @param baseToken 交易燃料手续费通证,也是公链的本币
+ * @param issuer 银关地址
+ * @param rpcNodes rpc节点服务器地址列表
+ */
+public JccJingtum(String alphabet, Integer fee, String baseToken, String issuer, ArrayList<String> rpcNodes)
+
+/**
+* 井通公链、联盟链RPC服务构造函数
+* @param alphabet 字母表，每一条联盟链都可以用不同的或者相同alphabet
+* @param fee 交易手续费(燃料费计算公式=fee/1000000)
+* @param baseToken 交易燃料手续费通证,也是公链的本币
+* @param issuer 银关地址
+* @param platform 交易平台账号
+* @param rpcNodes rpc节点服务器地址列表
+*/
+public JccJingtum(String alphabet, Integer fee, String baseToken, String issuer, String platform, ArrayList<String> rpcNodes)
+```
+### 设置每笔交易燃料费
+
+```java
+/**
+* 设置每笔交易燃料费
+* @param fee (燃料费计算公式=fee/1000000)
+*/
+public void setFee(Integer fee) throws  Exception
+```
+
+### 获取每笔交易燃料费
+```java
+/**
+* 获取每笔交易燃料费
+* @return 每笔交易燃料费
+*/
+public Integer getFee()
+```
+
+### 设置交易平台账号
+```java
+/**
+* 设置交易平台账号
+* @param platform 交易平台账号
+*/
+public void setPlatform(String platform) throws  Exception
+```
+
+### 获取交易平台账号
+```java
+/**
+* 获取交易平台账号
+* @return 交易平台账号
+*/
+public String getPlatform()
+```
+
+
+
+### 创建钱包(账号)
 
 ```java
 /**
@@ -33,7 +109,144 @@ jcc rpc java version
 */
 public String createWallet()  throws Exception
 ```
-### 调用试例
+
+### 通过钱包密钥获取钱包地址
+```java
+/**
+* 通过钱包密钥获取钱包地址
+* @param secret 钱包密钥
+* @return 钱包地址
+* @throws Exception 抛出异常
+*/
+public String getWalletAddress(String secret) throws  Exception
+```
+
+### 设置出错尝试次数
+```java
+/**
+* 设置出错尝试次数
+* @param tryTimes 次数
+*/
+public void setTryTimes(int tryTimes)
+```
+### 根据hash获取交易详情
+```java
+/**
+* 根据hash获取交易详情
+* @param hash 交易hash
+* @return 交易详情 json格式
+* @throws Exception 抛出异常
+*/
+public String requestTx(String hash) throws Exception
+```
+
+### 16进制备注内容直接转换成为字符串(无需Unicode解码)
+```java
+/**
+* 16进制备注内容直接转换成为字符串(无需Unicode解码)
+* @param hexStrMemData 16进制备注内容
+* @return 备注内容
+* @throws Exception 抛出异常
+*/
+public String getMemoData(String hexStrMemData) throws Exception
+```
+
+### 转账并校验
+
+```java
+/**
+*  转账并校验，每笔交易都会校验是否成功，适合普通转账，优点：每笔交易都进行确认，缺点：转账效率低下
+* @param secret 发送者钱包密钥
+* @param receiver 接收者钱包地址
+* @param pToken 转账Token
+* @param pAmount 转账数量
+* @param memos  转账备注
+* @return 交易详情 json格式
+* @throws Exception 抛出异常
+*/
+public String paymentWithCheck(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception
+```
+
+### 快速转账(转账不校验)
+```java
+/**
+*  快速转账，每笔交易不校验是否成功，适用于批量转账，优点：转账效率高，缺点：交易成功率无法保证，需要调用者自己进行校验
+* @param secret 发送者钱包密钥
+* @param receiver 接收者钱包地址
+* @param pToken 转账Token
+* @param pAmount 转账数量
+* @param memos  转账备注
+* @return 交易详情 json格式
+* @throws Exception 抛出异常
+*/
+public String paymentNoCheck(String secret, String receiver, String pToken, String pAmount, String memos) throws Exception
+```
+
+### 挂单并校验
+```java
+/**
+* 挂单并校验，每笔挂单都会校验是否成功，适合普通调用，优点：每笔交易都进行确认，缺点：效率低下
+* @param secret 挂单方钱包密钥
+* @param pPayToke  挂单方支付的Token名称
+* @param pPayAmount 挂单方支付的Token数量
+* @param pGetToken  挂单方期望得到的Token名称
+* @param pGetAmount 挂单方期望得到的Token数量
+* @param memos 备注
+* @return 交易详情 json格式
+*/
+public String createOrderWithCheck(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception
+```
+
+### 快速挂单(挂单不校验)
+```java
+/**
+* 快速挂单，每笔交易不校验是否成功，适用于批量挂单，优点：挂单效率高，缺点：交易成功率无法保证，需要调用者自己进行校验
+* @param secret 挂单方钱包密钥
+* @param pPayToke  挂单方支付的Token名称
+* @param pPayAmount 挂单方支付的Token数量
+* @param pGetToken  挂单方期望得到的Token名称
+* @param pGetAmount 挂单方期望得到的Token数量
+* @param memos 备注
+* @return 交易详情 json格式
+*/
+public String createOrderNoCheck(String secret, String pPayToke, String pPayAmount, String pGetToken, String pGetAmount, String memos) throws Exception
+```
+
+### 取消挂单
+```java
+/**
+* 取消挂单
+* @param secret 钱包密钥
+* @param pSequence 挂单序列号
+* @return 交易详情 json格式
+*/
+public String cancleOrder(String secret, String pSequence) throws Exception
+```
+
+### 向节点发送交易请求并确认
+```java
+/**
+* 向节点发送交易请求，并且根据签名得到的hash进行交易确认
+* @param txBlob 交易信息
+* @param hash hash
+* @return 交易信息
+* @throws Exception 抛出异常
+*/
+public String submit(String txBlob, String hash) throws Exception
+```
+
+### 向节点发送交易不确认
+```java
+/**
+* 向节点发送交易请求
+* @param txBlob 交易信息
+* @return 交易信息
+* @throws Exception 抛出异常
+*/
+public String submit(String txBlob) throws Exception
+```
+
+## 调用试例
 ```java
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,345 +265,36 @@ try {
     ArrayList<String> rpcNodes = mapper.readValue(list, new TypeReference<ArrayList<String>>() {
     });
     jccJingtum = new JccJingtum(100,"SWT","jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or", rpcNodes);
-    String _wallet = jccJingtum.createWallet();
-    System.out.println(_wallet);
+    //创建钱包
+    String ret = jccJingtum.createWallet();
+    System.out.println(ret);
+    
+    //转账并校验
+    ret = jccJingtum.paymentWithCheck("****","****","SWT","1","test");
+    System.out.println(ret);
+    
+    //转账不校验
+    ret = jccJingtum.paymentNoCheck("****","****","SWT","1","test");
+    System.out.println(ret);
+    
+    //挂单并校验
+    ret = jccJingtum.createOrderWithCheck("****","SWT","1","CNY","1","test");
+    System.out.println(ret);
+    
+     //挂单不校验
+    ret = jccJingtum.createOrderNoCheck("****","SWT","1","CNY","1","test");
+    System.out.println(ret);
+    
+    //撤销挂单
+    ret = jccJingtum.cancleOrder("****","****");
+    System.out.println(ret);
+
+    //获取交易详情
+    ret = jccJingtum.requestTx("****");
+    System.out.println(ret);
+    
 } catch (Exception e) {
     e.printStackTrace();
 }
 ```
 
-### Create JccdexUrl
-
-```javascript
-JccdexUrl jccUrl = new JccdexUrl("xxx", true);// https://xxx:443
-JccdexUrl jccUrl = new JccdexUrl("xxx", false);// http://xxx:80
-or
-JccdexUrl jccUrl = new JccdexUrl("xxx", true, 8081);// https://xxx:8081
-```
-
-## NodeRpc接口
-
-### 转账
-
-```java
-// 需引入底层签名包 https://jitpack.io/#JCCDex/jingtum-lib-java/v1.0.4-alpha
-// 转账地址
-String account = "";
-// 转账密钥
-String secret = "";
-// 转入地址
-String to = "";
-// 转账数量
-String value = "";
-// 转账token
-String token = "";
-// token发行地址
-String issuer = "";
-// token不为swt时，需要issuer和token名称
-Amount amount = new Amount(new BigDecimal(value), token.toUpperCase(), issuer);
-
-// token为swt时, 不需要issuer和token名称
-// Amount amount = new Amount(new BigDecimal(1));
-Payment payment = new Payment();
-payment.as(AccountID.Account, account);
-payment.as(AccountID.Destination, to);
-payment.as(Amount.Amount, amount);
-payment.as(Amount.Fee, "100");
-payment.flags(new UInt32(0));
-
-// 正式链的rpc节点可通过https://gateway.swtc.top/rpcservice获取
-// 建议节点定期更新，防止因为节点变更导致不可用
-JccdexUrl jccUrl = new JccdexUrl("124.93.26.68", false, 50333);
-JccdexNodeRpc nodeRpc = JccdexNodeRpc.getInstance();
-nodeRpc.setmBaseUrl(jccUrl);
-
-// 获取交易sequence
-nodeRpc.requestSequence(account, new JCallback() {
-
-    @Override
-    public void onResponse(String code, String response) {
-        System.out.println(code);
-        System.out.println(response);
-        // code为success表示获取sequence成功
-        if (code.equals("success")) {
-            int sequence = JSONObject.parseObject(response).getJSONObject("result").getJSONObject("account_data").getIntValue("Sequence");
-            payment.sequence(new UInt32(sequence));
-            SignedTransaction tx = null;
-            // 交易本地签名
-            try {
-                tx = payment.sign(secret);
-            } catch (Exception e) {
-                // 签名异常
-                // 根据实际需求做下一步操作
-                return;
-            }
-            // 交易hash, 和最后上链的hash一致。
-            Hash256 hash = tx.hash;
-            String blob = tx.tx_blob;
-            System.out.println("交易blob: " + tx.tx_blob);
-            System.out.println("交易hash: " + hash.toHex());
-            // 提交签名内容发起转账
-            nodeRpc.transfer(blob, new JCallback() {
-                @Override
-                public void onResponse(String code, String response) {
-                    System.out.println(code);
-                    System.out.println(response);
-                    // code说明见http://developer.jingtum.com/error_code.html
-                    // 一般情况下code为tesSUCCESS， 就表示交易成功
-                    // 但是也存在在tesSUCCESS情况下，实际没有成功上链的情况，最好提交交易过后，根据hash做二次验证
-                    // 节点每10s出块，建议异步验证交易详情，时间间隔建议最少10s之后
-                    // 根据业务需求决定是否做二次验证
-
-                    // 验证调用伪代码
-                    // nodeRpc.requestTx(hash.toHex(), new JCallback())
-            } else {
-                // 获取sequence失败
-                // 根据业务需求做下一步操作，建议10秒之后重新调用requestSequence获取sequence
-                }
-            }
-
-    @Override
-    public void onFail(Exception e) {
-        // 异常状态，根据业务需求做下一步操作
-        // 建议10秒之后重新调用requestSequence获取sequence
-    }
-});
-
-```
-
-## JccdexInfo API
-
-```javascript
-JccdexInfo info = JccdexInfo.getInstance();
-info.setmBaseUrl(jccUrl);
-```
-
-### requestTicker
-
-```javascript
-info.requestTicker(base, counter, callBack);
-// info.requestTicker("swt", "cnt", mockCallBack);
-```
-
-Parameters
-
-`signature`- `string`
-
-`counter`- `string`
-
-`callback`- `implements JCallback`
-
-### requestAllTickers
-
-```javascript
-info.requestAllTickers(callBack);
-```
-
-Parameters
-
-`callback`- `implements JCallback`
-
-### requestDepth
-
-```javascript
-info.requestDepth(base, counter, type, callBack);
-// info.requestDepth("swt", "cnt", "normal", mockCallBack);
-```
-
-Parameters
-
-`signature`- `string`
-
-`counter`- `string`
-
-`type`- `string {more | normal}`
-
-`callback`- `implements JCallback`
-
-### requestKline
-
-```javascript
-info.requestKline(base, counter, type, callBack);
-// info.requestDepth("swt", "cnt", "normal", mockCallBack);
-```
-
-Parameters
-
-`signature`- `string`
-
-`counter`- `string`
-
-`type`- `string {hour | day | week | month}`
-
-`callback`- `implements JCallback`
-
-### requestHistory
-
-```javascript
-info.requestHistory(base, counter, type, time, callBack);
-// String unixtime = String.valueOf(System.currentTimeMillis() / 1000);
-// info.requestHistory("swt", "cnt", "newest", unixtime, mockCallBack);
-```
-
-Parameters
-
-`signature`- `string`
-
-`counter`- `string`
-
-`type`- `string {all | more | newest}`
-
-`time`- `string {Unix time}`
-
-`callback`- `implements JCallback`
-
-### requestTickerFromCMC
-
-```javascript
-/**the token value includes eth and btc, the currency value includes cny and rub so far.*/
-info.requestTickerFromCMC(token, currency, callBack)
-```
-
-Parameters
-
-`token`- `string`
-
-`currency`- `string`
-
-`callback`- `implements JCallback`
-
-## JccConfig API
-
-```javascript
-JccConfig config = JccConfig.getInstance();
-config.setmBaseUrl(jccUrl);
-```
-
-### requestConfig
-
-```javascript
-config.requestConfig(callBack);
-```
-
-## JccExplore API
-
-```javascript
-JccExplore explore = JccExplore.getInstance();
-explore.setmBaseUrl(jccUrl);
-```
-
-### requestBalance
-
-通过浏览器接口获取地址余额
-
-```java
-
-// https://uploadletsdex.swtc.top/static/config/jc_hosts.json
-// scanHosts为浏览器节点
-
-JccdexUrl jccUrl = new JccdexUrl("expji39bdbdba1e1.swtc.top", true, 443);
-JccExplore explore = JccExplore.getInstance();
-explore.setmBaseUrl(jccUrl);
-// 钱包地址
-String address = "";
-String uuid = address;
-explore.requestBalance(uuid, address, callBack);
-
-
-```
-
-Parameters
-
-`uuid`- `string`
-
-`address`- `string`
-
-`callback`- `implements JCallback`
-
-### requestTransDetails
-
-```javascript
-explore.requestTransDetails(uuid, hash, callBack);
-```
-
-Parameters
-
-`uuid`- `string`
-
-`hash`- `string`
-
-`callback`- `implements JCallback`
-
-### requestHistoricTransWithAddr
-
-```javascript
-explore.requestHistoricTransWithAddr(uuid, page, size, begin, end, type, currency, address, callBack);
-```
-
-Parameters
-
-`uuid`- `string`
-
-`page`- `int`
-
-`size`- `int`
-
-`begin`- `string {xxxx-xx-xx}`
-
-`end`- `string {xxxx-xx-xx}`
-
-`type`- `string {Send、Receive}`
-
-`currency`- `string`
-
-`address`- `string`
-
-`callback`- `implements JCallback`
-
-### requestPaymentSummary
-
-```javascript
-explore.requestPaymentSummary(uuid, address, dateTpye, begin, end, type, token, callBack);
-```
-
-Parameters
-
-`uuid`- `string`
-
-`address`- `int`
-
-`dateTpye`- `int`
-
-`begin`- `string {xxxx-xx-xx}`
-
-`end`- `string {xxxx-xx-xx}`
-
-`type`- `string {Send、Receive}`
-
-`token`-  `string`
-
-`callback`- `implements JCallback`
-
-### requestHistoricTransWithCur
-
-```javascript
-explore.requestHistoricTransWithCur(uuid, page, size, begin, end, type, currency, callBack);
-```
-
-Parameters
-
-`uuid`- `string`
-
-`page`- `int`
-
-`size`- `int {10/20/50/100}`
-
-`begin`- `string {xxxx-xx-xx}`
-
-`end`- `string {xxxx-xx-xx}`
-
-`type`- `string`
-
-`currency`- `string`
-
-`callback`- `implements JCallback`
