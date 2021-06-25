@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD024 -->
 
-# jcc_rpc_java
+# jcc_rpc_java(v3.1.0)
 
 jcc rpc java version
 
@@ -8,20 +8,55 @@ jcc rpc java version
 [![Coverage Status](https://coveralls.io/repos/github/JCCDex/jcc_rpc_java/badge.svg?branch=master)](https://coveralls.io/github/JCCDex/jcc_rpc_java?branch=master)
 [![JitPack](https://jitpack.io/v/JCCDex/jcc_rpc_java.svg)](https://jitpack.io/#JCCDex/jcc_rpc_java)
 
-## Usage of jcc_rpc_java API
+## 引用依赖包
+```maven
+<dependency>
+    <groupId>io.github.jccdex</groupId>
+    <artifactId>JccWallet</artifactId>
+    <version>1.0.0</version>
+</dependency>
+<dependency>
+    <groupId>io.github.jccdex</groupId>
+    <artifactId>JccRPC</artifactId>
+    <version>3.1.0</version>
+</dependency>
+```
 
-## JCallback interface
+## 创建钱包(账号)
+### 接口描述
 
-```javascript
+```java
 /**
-*
-* @param code     code from jingchang api response, if the code is equal to 0
-*                 that means response result is correct, otherwise means wrong.
-* @param response response result from jingchang api
+* 创建钱包(账号)
+* @return 钱包字符串,json格式 ({"secret":****,"address":****})
+* @throws Exception 抛出异常
 */
-void onResponse(String code, String response);
+public String createWallet()  throws Exception
+```
+### 调用试例
+```java
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jccdex.rpc.JccJingtum;
+import com.jccdex.rpc.http.OkhttpUtil;
+import java.util.ArrayList;
 
-void onFail(Exception e);
+JccJingtum jccJingtum = null;
+try {
+    String serverConfigHost = "https://gateway.swtc.top/rpcservice";
+    String res = OkhttpUtil.get(serverConfigHost);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode obj = mapper.readTree(res);
+    String list = obj.get("rpcpeers").toString();
+    ArrayList<String> rpcNodes = mapper.readValue(list, new TypeReference<ArrayList<String>>() {
+    });
+    jccJingtum = new JccJingtum(100,"SWT","jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or", rpcNodes);
+    String _wallet = jccJingtum.createWallet();
+    System.out.println(_wallet);
+} catch (Exception e) {
+    e.printStackTrace();
+}
 ```
 
 ### Create JccdexUrl
