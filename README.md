@@ -246,7 +246,7 @@ public String submit(String txBlob, String hash) throws Exception
 public String submit(String txBlob) throws Exception
 ```
 
-## 调用试例
+## 调用示例
 ```java
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
