@@ -23,7 +23,7 @@ jcc rpc java version
 ```
 
 ## 接口描述
-[接口文档](https://github.com/xdjiang/jcc_rpc_java/blob/3.1.0/doc/index.html)
+[javadoc文档](https://github.com/xdjiang/jcc_rpc_java/blob/3.1.0/doc/index.html)
 ### 构造函数
 ```java
 /**
